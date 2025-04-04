@@ -2,11 +2,12 @@ const express= require('express')
 
 const router= express.Router()
 const z= require('zod')
-const {User} = require('../db')
+const {User,Account} = require('../db')
 const bcrypt = require('bcrypt')
 const jwt= require('jsonwebtoken')
 const {JWT_SECRET}= require('../config')
 const {middleware}= require('../middleware')
+
 
 router.post('/signup', async(req,res)=>{
 
@@ -16,7 +17,7 @@ router.post('/signup', async(req,res)=>{
         firstname: z.string().max(50),
         lastname: z.string().max(50)
     })
-
+ 
     const parsedBody= requiredBody.safeParse(req.body)
 
     if(!parsedBody.success){
@@ -25,6 +26,7 @@ router.post('/signup', async(req,res)=>{
     }
 
     const {username,password,firstname,lastname} = req.body;
+    
 
     const existingUser= await User.findOne({
         username:username
@@ -36,6 +38,7 @@ router.post('/signup', async(req,res)=>{
     }
 
     const hashedPassword= await bcrypt.hash(password,5) 
+    
 
     const user= await User.create({
         username: username,
@@ -43,15 +46,24 @@ router.post('/signup', async(req,res)=>{
         firstName: firstname,
         lastName: lastname
     })
+   
+    const userId= user._id
+
+    
 
     if(!user){
         res.status(401).json({message:"User could not be created"})
         return
     } else{
-        
-        
+        await Account.create({
+            user:userId,
+            balance: 1+ Math.random()*10000
+        })
         res.json({message:"User created successfully"})
     }
+
+    
+    
 
 
 })
@@ -132,7 +144,7 @@ router.put('/',middleware,async(req,res)=>{
 })
 
 
-router.get('/bulk', async(req,res)=>{
+router.get('/bulk',middleware, async(req,res)=>{
     const filter= req.query.filter || ""
 
     try{
