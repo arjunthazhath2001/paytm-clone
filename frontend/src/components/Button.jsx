@@ -1,9 +1,9 @@
 import React from 'react'
 
-function Button({title}) {
+function Button({title,...buttonProps}) {
   return (
     <div>
-        <button className='px-4 pt-1 pb-2 font-semibold text-white text-lg rounded-lg bg-black w-52'>{title}</button>
+        <button {...buttonProps} className='px-4 pt-1 mt-3 pb-2  font-semibold text-white text-lg rounded-lg bg-blue-600 w-52'>{title}</button>
     </div>
   )
 }
